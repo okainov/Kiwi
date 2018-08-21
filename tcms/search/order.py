@@ -56,7 +56,7 @@ def order_run_queryset(runs, field, asc=False):
     """
     orderable_fields = (
         'run_id', 'summary', 'manager__username',
-        'default_tester__username', 'env_groups',
+        'default_tester__username',
         'build__product__name', 'product_version',
         'plan__name'
     )

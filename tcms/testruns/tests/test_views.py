@@ -11,7 +11,6 @@ from django.conf import settings
 
 from tcms.testcases.models import Bug
 from tcms.testcases.models import BugSystem
-from tcms.testruns.models import EnvRunValueMap
 from tcms.testruns.models import TestCaseRunStatus
 from tcms.testruns.models import TestRun
 
@@ -19,8 +18,6 @@ from tcms.tests import BaseCaseRun
 from tcms.tests import BasePlanCase
 from tcms.tests import user_should_have_perm
 from tcms.tests.factories import ProductFactory
-from tcms.tests.factories import EnvPropertyFactory
-from tcms.tests.factories import EnvValueFactory
 from tcms.tests.factories import BuildFactory
 from tcms.tests.factories import TestCaseFactory
 from tcms.tests.factories import TestPlanFactory
@@ -149,7 +146,6 @@ class TestCreateNewRun(BasePlanCase):
                              case_run.case_run_status)
             self.assertEqual(0, case_run.case_text_version)
             self.assertEqual(new_run.build, case_run.build)
-            self.assertEqual(new_run.environment_id, case_run.environment_id)
             self.assertEqual(None, case_run.running_date)
             self.assertEqual(None, case_run.close_date)
 
@@ -665,90 +661,6 @@ class TestAddRemoveRunCC(BaseCaseRun):
             'The user you typed does not exist in database')
 
         self.assert_cc(response, [self.cc_user_2, self.cc_user_3])
-
-
-class TestEnvValue(BaseCaseRun):
-    """Test env_value view method"""
-
-    @classmethod
-    def setUpTestData(cls):
-        super(TestEnvValue, cls).setUpTestData()
-
-        cls.property_os = EnvPropertyFactory(name='os')
-        cls.value_linux = EnvValueFactory(value='Linux',
-                                          property=cls.property_os)
-        cls.value_bsd = EnvValueFactory(value='BSD',
-                                        property=cls.property_os)
-        cls.value_mac = EnvValueFactory(value='Mac',
-                                        property=cls.property_os)
-
-        cls.test_run.add_env_value(cls.value_linux)
-        cls.test_run_1.add_env_value(cls.value_linux)
-
-        cls.env_value_url = reverse('testruns-env_value')
-        user_should_have_perm(cls.tester, 'testruns.add_envrunvaluemap')
-        user_should_have_perm(cls.tester, 'testruns.delete_envrunvaluemap')
-
-    def test_refuse_if_action_is_unknown(self):
-        response = self.client.get(self.env_value_url, {
-            'env_value_id': self.value_bsd,
-            'run_id': self.test_run.pk
-        })
-
-        self.assertJSONEqual(
-            str(response.content, encoding=settings.DEFAULT_CHARSET),
-            {'rc': 1, 'response': 'Unrecognizable actions'})
-
-    def test_add_env_value(self):
-        self.client.get(self.env_value_url, {
-            'a': 'add',
-            'env_value_id': self.value_bsd.pk,
-            'run_id': self.test_run.pk
-        })
-
-        rel = EnvRunValueMap.objects.filter(run=self.test_run, value=self.value_bsd)
-        self.assertTrue(rel.exists())
-
-    def test_add_env_value_to_runs(self):
-        self.client.get(self.env_value_url, {
-            'a': 'add',
-            'env_value_id': self.value_bsd.pk,
-            'run_id': [self.test_run.pk, self.test_run_1.pk]
-        })
-
-        rel = EnvRunValueMap.objects.filter(run=self.test_run,
-                                            value=self.value_bsd)
-        self.assertTrue(rel.exists())
-
-        rel = EnvRunValueMap.objects.filter(run=self.test_run_1,
-                                            value=self.value_bsd)
-        self.assertTrue(rel.exists())
-
-    def test_delete_env_value(self):
-        self.client.get(self.env_value_url, {
-            'a': 'remove',
-            'env_value_id': self.value_linux.pk,
-            'run_id': self.test_run.pk,
-        })
-
-        rel = EnvRunValueMap.objects.filter(run=self.test_run,
-                                            value=self.value_linux)
-        self.assertFalse(rel.exists())
-
-    def test_delete_env_value_from_runs(self):
-        self.client.get(self.env_value_url, {
-            'a': 'remove',
-            'env_value_id': self.value_linux.pk,
-            'run_id': [self.test_run.pk, self.test_run_1.pk],
-        })
-
-        rel = EnvRunValueMap.objects.filter(run=self.test_run,
-                                            value=self.value_linux)
-        self.assertFalse(rel.exists())
-
-        rel = EnvRunValueMap.objects.filter(run=self.test_run_1,
-                                            value=self.value_linux)
-        self.assertFalse(rel.exists())
 
 
 class TestBugActions(BaseCaseRun):

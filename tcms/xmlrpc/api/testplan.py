@@ -197,10 +197,6 @@ def update(plan_id, values):
             tp.text = form.cleaned_data['text']
 
         tp.save()
-
-        if form.cleaned_data['env_group']:
-            tp.clear_env_groups()
-            tp.add_env_group(form.cleaned_data['env_group'])
     else:
         raise ValueError(form_errors_to_list(form))
 

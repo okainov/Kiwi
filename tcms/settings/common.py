@@ -99,10 +99,8 @@ MENU_ITEMS = [
         (_('Report builder'), '/report_builder/'),
     ]),
     (_('ADMIN'), [
-        (_('Environment Groups'), reverse_lazy('mgmt-environment_groups')),
-        (_('Envrionment Properties'), reverse_lazy('mgmt-environment_properties')),
-        ('-', '-'),
         (_('Users and groups'), '/admin/auth/'),
+        ('-', '-'),
         (_('Everything else'), '/admin/'),
     ]),
 ]
@@ -299,9 +297,6 @@ MODERNRPC_METHODS_MODULES = [
     'tcms.xmlrpc.api.build',
     'tcms.xmlrpc.api.category',
     'tcms.xmlrpc.api.component',
-    'tcms.xmlrpc.api.env_group',
-    'tcms.xmlrpc.api.env_property',
-    'tcms.xmlrpc.api.env_value',
     'tcms.xmlrpc.api.plantype',
     'tcms.xmlrpc.api.priority',
     'tcms.xmlrpc.api.product',
